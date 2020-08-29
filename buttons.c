@@ -21,12 +21,12 @@ void interrupts_setup ()
     gpio_set_input (BUTTON_DOWN);
 
     /* set internal pullup */
-    gpio_set_pullup (BUTTON_A);
-    gpio_set_pullup (BUTTON_B);
-    gpio_set_pullup (BUTTON_LEFT);
-    gpio_set_pullup (BUTTON_RIGHT);
-    gpio_set_pullup (BUTTON_UP);
-    gpio_set_pullup (BUTTON_DOWN);
+    // gpio_set_pullup (BUTTON_A);
+    // gpio_set_pullup (BUTTON_B);
+    // gpio_set_pullup (BUTTON_LEFT);
+    // gpio_set_pullup (BUTTON_RIGHT);
+    // gpio_set_pullup (BUTTON_UP);
+    // gpio_set_pullup (BUTTON_DOWN);
 
     /* initialize debounce */
     debounce_init (BUTTON_A);

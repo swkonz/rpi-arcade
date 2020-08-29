@@ -13,11 +13,6 @@ typedef unsigned color;
 #define FONT_DEPTH                               4 // depth
 #define FONT_SIZE                              896 // size = width * height * depth
 
-#define BUTTON_NORTH                    GPIO_PIN20
-#define BUTTON_EAST                     GPIO_PIN22
-#define BUTTON_SOUTH                    GPIO_PIN23
-#define BUTTON_WEST                     GPIO_PIN24
-
 #define BCKGRND_COLOR                     GL_BLACK
 #define PACMAN_YELLOW                   0xFFFFEE00
 #define GHOST_BLINKY                    0xffe12000

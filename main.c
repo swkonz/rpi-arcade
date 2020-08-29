@@ -12,6 +12,7 @@
 #include "strings.h"
 #include "system.h"
 #include "timer.h"
+#include "printf.h"
 
 /* Static globals */
 static unsigned state = 0;
@@ -19,6 +20,7 @@ int score = 0;                  // used for keeping game scores
 
 static bool handler_a (unsigned pc) 
 {
+    printf("A button\n");
     if (debounce(BUTTON_A) && gpio_check_and_clear_event(BUTTON_A))
     {
         state |= 1 << (BUTTON_A - BUTTON_FIRST);            // set first bit
@@ -29,6 +31,7 @@ static bool handler_a (unsigned pc)
 
 static bool handler_up (unsigned pc) 
 {
+    printf("up\n");
     if (debounce(BUTTON_UP) && gpio_check_and_clear_event(BUTTON_UP))
     {
         state |= 1 << (BUTTON_UP - BUTTON_FIRST);            // set first bit
@@ -39,10 +42,36 @@ static bool handler_up (unsigned pc)
 
 static bool handler_down (unsigned pc) 
 {
+    printf("down\n");
     if (debounce(BUTTON_DOWN) && gpio_check_and_clear_event(BUTTON_DOWN))
     {
         state |= 1 << (BUTTON_DOWN - BUTTON_FIRST);            // set first bit
     } 
+
+    return true;
+}
+
+
+static bool handler_left (unsigned pc) 
+{
+    if (gpio_check_and_clear_event(BUTTON_LEFT))
+        printf("left\n");
+
+    return true;
+}
+
+static bool handler_right (unsigned pc) 
+{
+    if (gpio_check_and_clear_event(BUTTON_RIGHT))
+        printf("right\n");
+
+    return true;
+}
+
+static bool handler_b (unsigned pc) 
+{
+    if (gpio_check_and_clear_event(BUTTON_B))
+        printf("button b\n");
 
     return true;
 }
@@ -110,8 +139,11 @@ void main()
 
     /* setup interrupts */
     gpio_interrupts_register_handler (BUTTON_A, handler_a);
+    gpio_interrupts_register_handler (BUTTON_B, handler_b);
     gpio_interrupts_register_handler (BUTTON_UP, handler_up);
     gpio_interrupts_register_handler (BUTTON_DOWN, handler_down);
+    gpio_interrupts_register_handler (BUTTON_LEFT, handler_left);
+    gpio_interrupts_register_handler (BUTTON_RIGHT, handler_right);
 
     static unsigned selected = 0;
     while (1)
@@ -126,10 +158,12 @@ void main()
         if (get_bit (state, BUTTON_A - BUTTON_FIRST) ) {
             score = 0;
             // start game
-            printf("start game\n");
-            // flappy_bird ();
-            play_pacman ();
+            if (selected == 0)
+                flappy_bird ();
+            else play_pacman ();
         }
+
+        printf ("selected: %d\n", selected);
 
         // clear the state
         state = 0;
