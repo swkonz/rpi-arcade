@@ -9,6 +9,7 @@
 #include "bird.h"
 #include "pipe.h"
 #include "interrupts.h"
+#include "gpio_interrupts.h"
 #include "system.h"
 #include "pi.h"
 
@@ -38,9 +39,13 @@ bool interrupt_handler(unsigned pc) {
 }
 
 static void interrupts_setup(void) {
+    interrupts_init();
+    gpio_interrupts_init();
     gpio_enable_event_detection(BUTTON_A_PIN, GPIO_DETECT_RISING_EDGE);
-    interrupts_register_handler(INTERRUPTS_GPIO3, interrupt_handler);
-    interrupts_global_enable();
+
+    gpio_interrupts_enable ();
+    interrupts_global_enable ();
+    gpio_interrupts_register_handler (BUTTON_A_PIN, interrupt_handler);
 }
 
 static void button_init() {

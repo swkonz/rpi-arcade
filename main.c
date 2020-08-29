@@ -1,83 +1,74 @@
-#include "gl.h"
+#include "buttons.h"
 #include "constants.h"
-#include "strings.h"
-#include "interrupts.h"
-#include "gpio_interrupts.h"
+#include "debounce.h"
+#include "gl.h"
 #include "gpio.h"
 #include "gpioextra.h"
+#include "gpio_interrupts.h"
+#include "interrupts.h"
 #include "printf.h"
+#include "strings.h"
+#include "system.h"
 #include "timer.h"
+#include "flappy_bird.h"
 
-#include "debounce.h"
 
 /* Static globals */
-static unsigned selected = 0;
+static unsigned state = 0;
+int score = 0;                  // used for keeping game scores
 
-/** interrupt_handler
- *  Handle button events for the game
- */
-static bool interrupt_handler(unsigned pc)
-{   
-    // handle button press
+static bool handler_a (unsigned pc) 
+{
     if (debounce(BUTTON_A) && gpio_check_and_clear_event(BUTTON_A))
     {
-        selected = (selected + 1) % NUM_GAMES;
-    }
+        state |= 1 << (BUTTON_A - BUTTON_FIRST);            // set first bit
+    } 
+
     return true;
 }
 
-static bool interrupt_handler_b(unsigned pc) 
+static bool handler_up (unsigned pc) 
 {
-    // handle button press
-    if (debounce(BUTTON_A) && gpio_check_and_clear_event(BUTTON_B))
+    if (debounce(BUTTON_UP) && gpio_check_and_clear_event(BUTTON_UP))
     {
-        selected = (selected + 1) % NUM_GAMES;
-    }
+        state |= 1 << (BUTTON_UP - BUTTON_FIRST);            // set first bit
+    } 
+
     return true;
 }
+
+static bool handler_down (unsigned pc) 
+{
+    if (debounce(BUTTON_DOWN) && gpio_check_and_clear_event(BUTTON_DOWN))
+    {
+        state |= 1 << (BUTTON_DOWN - BUTTON_FIRST);            // set first bit
+    } 
+
+    return true;
+}
+
 
 void initialize()
-{
+{   
+    /* systems controls */
+    system_enable_cache();
+
     /* Graphics */
-    gl_init(WIDTH, HEIGHT, GL_DOUBLEBUFFER);
+    gl_init (WIDTH, HEIGHT, GL_DOUBLEBUFFER);
 
-    /* IO */
-    gpio_init();
-    gpio_set_input(BUTTON_A);
-    gpio_set_pullup(BUTTON_A);
-    debounce_init(BUTTON_A);
-    gpio_set_input(BUTTON_B);
-    gpio_set_pullup(BUTTON_B);
-    debounce_init(BUTTON_B);
-    // gpio_set_input(BUTTON_LEFT);
-    // gpio_set_pullup(BUTTON_LEFT);
-    // gpio_set_input(BUTTON_RIGHT);
-    // gpio_set_pullup(BUTTON_RIGHT);
-    // gpio_set_input(BUTTON_UP);
-    // gpio_set_pullup(BUTTON_UP);
-    // gpio_set_input(BUTTON_DOWN);
-    // gpio_set_pullup(BUTTON_DOWN);
-
-    /* Interrupts Init */
-    interrupts_init();
-    gpio_interrupts_init();
-
-    /* Interrupt Events */
-    gpio_enable_event_detection(BUTTON_A, GPIO_DETECT_RISING_EDGE);
-    gpio_enable_event_detection(BUTTON_B, GPIO_DETECT_RISING_EDGE);
-    // gpio_enable_event_detection(BUTTON_LEFT, GPIO_DETECT_RISING_EDGE);
-    // gpio_enable_event_detection(BUTTON_RIGHT, GPIO_DETECT_RISING_EDGE);
-    // gpio_enable_event_detection(BUTTON_UP, GPIO_DETECT_RISING_EDGE);
-    // gpio_enable_event_detection(BUTTON_DOWN, GPIO_DETECT_RISING_EDGE);
-
-    /* Register Interrupt handlers */
-    gpio_interrupts_register_handler(BUTTON_A, interrupt_handler);
-    gpio_interrupts_register_handler(BUTTON_B, interrupt_handler_b);
-
-    /* enable gpio interrupts */
-    gpio_interrupts_enable();
-    interrupts_global_enable();
+    /* Setup landing screen interrupts */
+    interrupts_setup ();
 }
+
+
+/**
+ * get_bit: get the state of a bit in an unsigned int
+ */
+bool get_bit (unsigned num, unsigned bit)
+{
+    return (num >> bit) & 0x1;
+}
+
 
 /**
  * get_center_pixel_x: Find pixel for this string to be centered
@@ -89,6 +80,7 @@ static int get_center_position_x(const char *str)
 {
     return (gl_get_width() / 2) - (gl_get_char_width() * strlen(str) / 2);
 }
+
 
 void display_start_header()
 {
@@ -116,31 +108,52 @@ void main()
     static const char *FLAPPY = "Flappy Bird";
     static const char *PACMAN = "Pacman";
 
+    /* setup interrupts */
+    gpio_interrupts_register_handler (BUTTON_A, handler_a);
+    gpio_interrupts_register_handler (BUTTON_UP, handler_up);
+    gpio_interrupts_register_handler (BUTTON_DOWN, handler_down);
+
+    static unsigned selected = 0;
     while (1)
     {
         display_start_header();
 
+        /* handle controls inputs */
+        if (get_bit (state, BUTTON_UP - BUTTON_FIRST) )
+            selected = selected == 0 ? 0 : selected - 1;
+        if (get_bit (state, BUTTON_DOWN - BUTTON_FIRST) ) 
+            selected = selected == MAX_GAME_ID ? MAX_GAME_ID : selected + 1;
+        if (get_bit (state, BUTTON_A - BUTTON_FIRST) ) {
+            score = 0;
+            // start game
+            printf("start game\n");
+            flappy_bird ();
+        }
+
+        // clear the state
+        state = 0;
+
         // draw rectangle over whichever option is selected
-        gl_draw_rect(get_center_position_x(selected == 0 ? FLAPPY : PACMAN),
-                     150 + (gl_get_char_height() * 2 * selected),
-                     gl_get_char_width() * strlen(selected == 0 ? FLAPPY : PACMAN),
-                     gl_get_char_height(),
+        gl_draw_rect (get_center_position_x (selected == 0 ? FLAPPY : PACMAN),
+                     150 + (gl_get_char_height () * 2 * selected),
+                     gl_get_char_width () * strlen (selected == 0 ? FLAPPY : PACMAN),
+                     gl_get_char_height (),
                      LANDING_BKGD_TEXT_COLOR);
 
-        gl_draw_string(get_center_position_x(FLAPPY),
+        gl_draw_string (get_center_position_x (FLAPPY),
                        150,
                        FLAPPY,
                        LANDING_TEXT_COLOR);
 
-        gl_draw_string(get_center_position_x(PACMAN),
-                       150 + gl_get_char_height() + 20,
+        gl_draw_string (get_center_position_x (PACMAN),
+                       150 + gl_get_char_height () + 20,
                        PACMAN,
                        LANDING_TEXT_COLOR);
-
+        
         // swap buffer
-        gl_swap_buffer();
+        gl_swap_buffer ();
 
-        timer_delay_ms(50);
+        timer_delay_ms (50);
     }
 
 }

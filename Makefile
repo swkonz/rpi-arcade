@@ -1,5 +1,5 @@
 APPLICATION = main.bin
-MY_MODULES = debounce.o
+MY_MODULES = debounce.o buttons.o bird.o pipe.o gl_extra.o flappy_bird.o
 
 CFLAGS = -I$(CS107E)/include -g -Wall -Og -std=c99 -ffreestanding
 CFLAGS += -mapcs-frame -fno-omit-frame-pointer -mpoke-function-name -Wpointer-arith

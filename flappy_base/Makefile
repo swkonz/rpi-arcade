@@ -24,7 +24,7 @@ all : $(MY_MODULES) $(APPLICATION)
 	arm-none-eabi-objdump --no-show-raw-insn -d $< > $@
 
 install: $(APPLICATION)
-	rpi-install.py $<
+	rpi-install.py -p $<
 
 clean:
 	rm -f *.o *.bin *.elf *.list *~
