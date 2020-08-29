@@ -1,4 +1,5 @@
 #include "pacman_constants.h"
+#include "constants.h"
 #include "gl.h"
 #include "fb.h"
 #include "malloc.h"
@@ -11,10 +12,10 @@ color ghost_colors[4] = {GHOST_BLINKY, GHOST_INKY, GHOST_PINKY, GHOST_CLYDE};
 
 static const int r = 8; 
 static void draw_ghost(int top_left_x, int top_left_y, color c) {
-    color (*pixels)[_WIDTH] = (color (*)[_WIDTH]) fb_get_draw_buffer();
+    color (*pixels)[WIDTH] = (color (*)[WIDTH]) fb_get_draw_buffer();
 
-    int x = top_left_x + _WIDTH / 38;
-    int y = top_left_y + _HEIGHT / 40;
+    int x = top_left_x + WIDTH / 38;
+    int y = top_left_y + HEIGHT / 40;
 
     for (int dy = -r; dy <= r; dy++) {
         for (int dx = -r; dx <= r; dx++) {

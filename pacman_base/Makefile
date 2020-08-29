@@ -1,8 +1,5 @@
-# NAME = main
-# OBJECTS = interrupts.o vectors.o register.o system.o gl.o fb.o grid.o pacman.o ghost.o random.o math.o audio.o spi.o mcp3008.o 
-
 APPLICATION = main.bin
-MY_MODULES = gl_extra.o grid.o pacman.o ghost.o random.o math.o mcp3008.o 
+MY_MODULES = gl_extra.o grid.o pacman.o ghost.o math.o
 
 CFLAGS = -I$(CS107E)/include -g -Wall -Og -std=c99 -ffreestanding
 CFLAGS += -mapcs-frame -fno-omit-frame-pointer -mpoke-function-name -Wpointer-arith

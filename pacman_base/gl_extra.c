@@ -1,4 +1,4 @@
-#include "constants.h"
+#include "pacman_constants.h"
 #include "gl_extra.h"
 
 // x and y are in the top left corner

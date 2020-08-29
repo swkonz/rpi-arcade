@@ -2,9 +2,10 @@
 #define CONSTANTS_H
 
 #include "gpio.h"
+#include "constants.h"
 
-#define _WIDTH                                 640 // 19*34 = 646
-#define _HEIGHT                                512 // 20*26 = 520
+typedef unsigned color;
+
 #define BACKGROUND_COLOR                  GL_BLACK
 
 #define FONT_WIDTH                              14 // width
@@ -12,12 +13,10 @@
 #define FONT_DEPTH                               4 // depth
 #define FONT_SIZE                              896 // size = width * height * depth
 
-#define BUTTON_NORTH                    GPIO_PIN21
+#define BUTTON_NORTH                    GPIO_PIN20
 #define BUTTON_EAST                     GPIO_PIN22
 #define BUTTON_SOUTH                    GPIO_PIN23
 #define BUTTON_WEST                     GPIO_PIN24
-#define AUDIO_INTERRUPT_PIN             GPIO_PIN21
-#define AUDIO_READ_CHANNEL                       0
 
 #define BCKGRND_COLOR                     GL_BLACK
 #define PACMAN_YELLOW                   0xFFFFEE00
@@ -38,10 +37,10 @@
 #define GHOST_START_X                            PACMAN_START_X
 #define GHOST_START_Y                            (WALL_HEIGHT * 10)
 
-#define PACMAN_WEST_LIMIT                        _WIDTH / 19
-#define PACMAN_NORTH_LIMIT                       _HEIGHT / 20 * 2
-#define PACMAN_EAST_LIMIT                        _WIDTH / 19 * 17
-#define PACMAN_SOUTH_LIMIT                       _HEIGHT - (_HEIGHT / 20)
+#define PACMAN_WEST_LIMIT                        WIDTH / 19
+#define PACMAN_NORTH_LIMIT                       HEIGHT / 20 * 2
+#define PACMAN_EAST_LIMIT                        WIDTH / 19 * 17
+#define PACMAN_SOUTH_LIMIT                       HEIGHT - (HEIGHT / 20)
 
 #define NORTH                                    0
 #define EAST                                     1
@@ -53,17 +52,17 @@
 #define WALL                                     0
 #define FOOD                                     1
 #define EMPTY                                    2
-#define WALL_WIDTH                    (_WIDTH / 19)
-#define WALL_HEIGHT                  (_HEIGHT / 20)
-#define WALL_HALF_WIDTH               (_WIDTH / 38)
-#define WALL_HALF_HEIGHT             (_HEIGHT / 38)
+#define WALL_WIDTH                    (WIDTH / 19)
+#define WALL_HEIGHT                  (HEIGHT / 20)
+#define WALL_HALF_WIDTH               (WIDTH / 38)
+#define WALL_HALF_HEIGHT             (HEIGHT / 38)
 
 #define NUM_GHOSTS                               4
 #define NUM_FOODS                              150
 
 #define SCORE_X                                 10
 #define SCORE_Y                                  7
-#define LIVES_X             _WIDTH - FONT_WIDTH*10
+#define LIVES_X             WIDTH - FONT_WIDTH*10
 
 
 

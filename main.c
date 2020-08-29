@@ -1,17 +1,17 @@
 #include "buttons.h"
 #include "constants.h"
 #include "debounce.h"
+#include "flappy_bird.h"
 #include "gl.h"
 #include "gpio.h"
 #include "gpioextra.h"
 #include "gpio_interrupts.h"
 #include "interrupts.h"
+#include "pacman_game.h"
 #include "printf.h"
 #include "strings.h"
 #include "system.h"
 #include "timer.h"
-#include "flappy_bird.h"
-
 
 /* Static globals */
 static unsigned state = 0;
@@ -127,7 +127,8 @@ void main()
             score = 0;
             // start game
             printf("start game\n");
-            flappy_bird ();
+            // flappy_bird ();
+            play_pacman ();
         }
 
         // clear the state

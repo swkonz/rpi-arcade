@@ -1,5 +1,6 @@
 #include "pacman.h"
 #include "pacman_constants.h"
+#include "constants.h"
 #include "gl.h"
 #include "fb.h"
 #include "malloc.h"
@@ -12,10 +13,10 @@ extern int died;
 extern color ghost_colors[4];
 
 static void draw_pacman(int top_left_x, int top_left_y, int r, int direction) {
-    color (*pixels)[_WIDTH] = (color (*)[_WIDTH]) fb_get_draw_buffer();
+    color (*pixels)[WIDTH] = (color (*)[WIDTH]) fb_get_draw_buffer();
 
-    int x = top_left_x + _WIDTH / 38;
-    int y = top_left_y + _HEIGHT / 40;
+    int x = top_left_x + WIDTH / 38;
+    int y = top_left_y + HEIGHT / 40;
 
     // Draw yellow body
     for (int dy = -r; dy <= r; dy++) {

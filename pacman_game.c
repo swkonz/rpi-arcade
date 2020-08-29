@@ -1,7 +1,9 @@
+#include "constants.h"
 #include "printf.h"
 #include "timer.h"
 #include "gpio.h"
 #include "gpioextra.h"
+#include "gpio_interrupts.h"
 #include "interrupts.h"
 #include "uart.h"
 #include "pacman_constants.h"
@@ -10,6 +12,7 @@
 #include "system.h"
 #include "pacman.h"
 #include "ghost.h"
+#include "timer.h"
 
 static pacman_t *pacman;
 static ghost_t *ghost[4];
@@ -21,53 +24,40 @@ int counter = 0;
 
 // ***************** INTERRUPTS ***************** //
 
-bool interrupt_handler(unsigned pc)
+static bool handler_up (unsigned pc)
 {
-    if (gpio_check_and_clear_event(BUTTON_NORTH))
+    if (gpio_check_and_clear_event(BUTTON_UP))
     {
         pacman->future_direction = NORTH;
-    }
-    else if (gpio_check_and_clear_event(BUTTON_SOUTH))
-    {
-        pacman->future_direction = SOUTH;
-    }
-    else if (gpio_check_and_clear_event(BUTTON_EAST))
-    {
-        pacman->future_direction = EAST;
-    }
-    else if (gpio_check_and_clear_event(BUTTON_WEST))
-    {
-        pacman->future_direction = WEST;
     }
     return true;
 }
 
-// should not get called.
-void impossible_vector(unsigned pc)
+static bool handler_down (unsigned pc)
 {
-    printf("impossible exception at pc=%x\n", pc);
+    if (gpio_check_and_clear_event(BUTTON_DOWN))
+    {
+        pacman->future_direction = SOUTH;
+    }
+    return true;
 }
 
-static void interrupts_setup(void)
+static bool handler_right (unsigned pc)
 {
-    gpio_enable_event_detection(BUTTON_NORTH, GPIO_DETECT_FALLING_EDGE);
-    gpio_enable_event_detection(BUTTON_SOUTH, GPIO_DETECT_FALLING_EDGE);
-    gpio_enable_event_detection(BUTTON_EAST, GPIO_DETECT_FALLING_EDGE);
-    gpio_enable_event_detection(BUTTON_WEST, GPIO_DETECT_FALLING_EDGE);
-    interrupts_register_handler(INTERRUPTS_GPIO3, interrupt_handler);
-    interrupts_global_enable();
+    if (gpio_check_and_clear_event(BUTTON_RIGHT))
+    {
+        pacman->future_direction = EAST;
+    }
+    return true;
 }
 
-static void buttons_init()
+static bool handler_left (unsigned pc)
 {
-    gpio_set_function(BUTTON_NORTH, GPIO_FUNC_INPUT);
-    gpio_set_pullup(BUTTON_NORTH);
-    gpio_set_function(BUTTON_SOUTH, GPIO_FUNC_INPUT);
-    gpio_set_pullup(BUTTON_SOUTH);
-    gpio_set_function(BUTTON_EAST, GPIO_FUNC_INPUT);
-    gpio_set_pullup(BUTTON_EAST);
-    gpio_set_function(BUTTON_WEST, GPIO_FUNC_INPUT);
-    gpio_set_pullup(BUTTON_WEST);
+    if (gpio_check_and_clear_event(BUTTON_LEFT))
+    {
+        pacman->future_direction = WEST;
+    }
+    return true;
 }
 
 // not expecting more than a three digit scores
@@ -105,13 +95,13 @@ static void draw_score_and_lives()
         printf("%s: %dus\n", (NAME), timer_get_time() - time); \
     }
 
-void main()
+void play_pacman()
 {
-    interrupts_init();
-    interrupts_setup();
-    buttons_init();
-    gl_init(_WIDTH, _HEIGHT, GL_DOUBLEBUFFER);
-    system_enable_cache();
+    /* switch interrupt handlers */
+    handler_fn_t prev_up = gpio_interrupts_register_handler (BUTTON_UP, handler_up);
+    handler_fn_t prev_down = gpio_interrupts_register_handler (BUTTON_DOWN, handler_down);
+    handler_fn_t prev_left = gpio_interrupts_register_handler (BUTTON_LEFT, handler_left);
+    handler_fn_t prev_right = gpio_interrupts_register_handler (BUTTON_RIGHT, handler_right);
 
     score = 0;
     lives = 3;
@@ -171,17 +161,20 @@ void main()
         }
     }
 
-    if (died)
+    if (died && lives == 0)
     {
-        gl_draw_string((_WIDTH - (FONT_WIDTH * 9)) / 2, (_HEIGHT - FONT_HEIGHT) / 2, "GAME OVER", GL_WHITE);
+        gl_draw_string((WIDTH - (FONT_WIDTH * 9)) / 2, (HEIGHT - FONT_HEIGHT) / 2, "GAME OVER", GL_WHITE);
     }
     else
     {
-        gl_draw_string((_WIDTH - (FONT_WIDTH * 8)) / 2, (_HEIGHT - FONT_HEIGHT) / 2, "YOU WON!", GL_WHITE);
+        gl_draw_string((WIDTH - (FONT_WIDTH * 8)) / 2, (HEIGHT - FONT_HEIGHT) / 2, "YOU WON!", GL_WHITE);
     }
     gl_swap_buffer();
+    timer_delay (3);
 
-    // printf("\ndone\n");
-    //    delay(10);
-    // reboot();
+    /* swap back to original interrupt handlers */
+    gpio_interrupts_register_handler (BUTTON_UP, prev_up);
+    gpio_interrupts_register_handler (BUTTON_DOWN, prev_down);
+    gpio_interrupts_register_handler (BUTTON_LEFT, prev_left);
+    gpio_interrupts_register_handler (BUTTON_RIGHT, prev_right);
 }

@@ -3,6 +3,7 @@
 #include "gl.h"
 #include "gl_extra.h"
 #include "pacman_constants.h"
+#include "constants.h"
 #include "grid.h"
 
 //pointer to grid
@@ -72,8 +73,8 @@ void draw_maze()
                 draw_food(cur_x + 14, cur_y + 11);
             }
             //now update working block
-            cur_x = (cur_x + WALL_WIDTH) % _WIDTH;
+            cur_x = (cur_x + WALL_WIDTH) % WIDTH;
         }
-        cur_y += WALL_HEIGHT % _HEIGHT;
+        cur_y += WALL_HEIGHT % HEIGHT;
     }
 }
